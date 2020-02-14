@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportToSQL", "DataImportToSQL\DataImportToSQL.csproj", "{6A72A61F-0ADA-4B73-AAF6-B6CB95DB3B2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImport.Storage", "DataImport.Storage\DataImport.Storage.csproj", "{B3EB45C2-11F3-4069-81B7-5DDB23626BCE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImport.Data", "DataImport.Data\DataImport.Data.csproj", "{314B527A-DE7A-446F-A3B7-7180BFA51B7F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A72A61F-0ADA-4B73-AAF6-B6CB95DB3B2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A72A61F-0ADA-4B73-AAF6-B6CB95DB3B2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A72A61F-0ADA-4B73-AAF6-B6CB95DB3B2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A72A61F-0ADA-4B73-AAF6-B6CB95DB3B2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3EB45C2-11F3-4069-81B7-5DDB23626BCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3EB45C2-11F3-4069-81B7-5DDB23626BCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3EB45C2-11F3-4069-81B7-5DDB23626BCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3EB45C2-11F3-4069-81B7-5DDB23626BCE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{314B527A-DE7A-446F-A3B7-7180BFA51B7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{314B527A-DE7A-446F-A3B7-7180BFA51B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{314B527A-DE7A-446F-A3B7-7180BFA51B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{314B527A-DE7A-446F-A3B7-7180BFA51B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
