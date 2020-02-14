@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,12 +21,6 @@ namespace DataImport.Storage
         {
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            //Data Source=KOVALYK-V\\SQLEXPRESS;Initial Catalog=ImportedDataDB;Integrated Security=True;Persist Security Info=False;MultipleActiveResultSets=True
-            optionsBuilder.UseSqlServer(@"Server=KOVALYK-V\SQLEXPRESS;Database=ImportedDataDB;Trusted_Connection=True;");
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new FieldsImportedDataMap());
@@ -36,15 +32,24 @@ namespace DataImport.Storage
         }
 
 
-        public async Task BulkSaveAsync<T>(IEnumerable<T> entities, CancellationToken token = default) where T : BaseEntity
+        public async Task BulkSaveAsync(string tableName, DataTable dataTable, CancellationToken token = default)
         {
             var dbConnection = Database.GetDbConnection();
             var sbCopy = new SqlBulkCopy(dbConnection.ConnectionString)
             {
-                DestinationTableName = typeof(T).GetTypeInfo().Name
+                DestinationTableName = tableName
             };
+            
+            await sbCopy.WriteToServerAsync(dataTable, token);
+        }
 
-            await sbCopy.WriteToServerAsync(entities.ToDataTable(), token);
+        public async Task TryToCreateTable(string tableName, DataTable table)
+        {
+            var create = @$" IF OBJECT_ID('dbo.{tableName}', 'U') IS NULL CREATE TABLE dbo.{tableName} (";
+            create = table.Columns.Cast<DataColumn>().Aggregate(create, (current, column) => current + $@"[{column.ColumnName}] [nvarchar] ({column.MaxLength}),");
+
+            create += ") ON [PRIMARY]";
+            await Database.ExecuteSqlRawAsync(create);
         }
     }
 }

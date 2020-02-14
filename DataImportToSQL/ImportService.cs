@@ -1,10 +1,9 @@
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataImport.Storage;
 using DataImportToSQL.Exceptions;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace DataImportToSQL
@@ -31,24 +30,49 @@ namespace DataImportToSQL
                 throw new ImportException($"Files does not exist in directory: {_providerOptions.FilesPath}");
             }
             
-            var specification = _provider.GetSpecifications();
+            var specifications = _provider.GetFileSpecifications();
+            var dataTable = specifications.ToDataTable();
+            await _importContext.TryToCreateTable(specifications.TableName, dataTable);
+            
             var files = Directory.GetFiles(_providerOptions.FilesPath);
 
+            var specCount = specifications.Specifications.Count;
             foreach (var file in files)
             {
-                using (var stream = new StreamReader(file))
+                var stringToJoin = "";
+                using var stream = new StreamReader(file);
+                
+                var buffer = new char[1500000];
+                while(stream.ReadBlock(buffer,0,buffer.Length) > 0)
                 {
-                    if (specification.FileType.IsFixedLength)
+                    var str = new string(buffer);
+                    str = stringToJoin + str;
+                    
+                    foreach (var record in str.Split(specifications.FileType.RecordsDelimiter))
                     {
-                        var line = stream.ReadLine();
+                        var fields = record.Split(specifications.FileType.FieldsDelimiter);
+                        if (fields.Any(item => item == "750458753"))
+                        {
+                            
+                        }
+                        
+                        if (specCount == fields.Length)
+                        {
+                            dataTable.Rows.Add(fields);
+                            stringToJoin = string.Empty;
+                        }
+                        else if (specCount > fields.Length)
+                        {
+                            stringToJoin = record;
+                        }
+                        else if (specCount < fields.Length)
+                        {
+                           
+                        }
                     }
-
-                  
-
                 }
 
-                var sourceFilePath = new SqlParameter("@SourceFilePath", file);
-                await _importContext.Database.ExecuteSqlRawAsync($"[dbo].[Bulk_Import]({file})", cancellationToken);
+                await _importContext.BulkSaveAsync(specifications.TableName, dataTable, cancellationToken);
             }
         }
     }
