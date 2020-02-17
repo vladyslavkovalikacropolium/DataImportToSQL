@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataImport.Storage;
 using DataImportToSQL.Exceptions;
-using DataImportToSQL.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace DataImportToSQL
@@ -44,7 +43,7 @@ namespace DataImportToSQL
                 var recordToJoin = "";
                 using var stream = new StreamReader(file);
 
-                var buffer = new char[8000];
+                var buffer = new char[1000000];
 
                 while (!stream.EndOfStream)
                 {
@@ -59,12 +58,18 @@ namespace DataImportToSQL
                     var block = new string(buffer);
                     block = recordToJoin + block;
 
-                    var lastIndex = block.LastIndexOf(fileSpecifications.FileType.RecordsDelimiter,
-                        StringComparison.Ordinal);
-                    var lastUncompletedRecord = block.Substring(lastIndex);
+                    var lastIndex = block
+                        .LastIndexOf(fileSpecifications.FileType.RecordsDelimiter, StringComparison.Ordinal);
 
-                    var records = block.Split(fileSpecifications.FileType.RecordsDelimiter,
-                        StringSplitOptions.RemoveEmptyEntries);
+                    var lastUncompletedRecord = string.Empty;
+                    if (lastIndex != -1)
+                    {
+                        lastUncompletedRecord = block.Substring(lastIndex);
+                    }
+
+                    var records = block
+                        .Split(fileSpecifications.FileType.RecordsDelimiter, StringSplitOptions.RemoveEmptyEntries);
+                    
                     if (!string.IsNullOrEmpty(lastUncompletedRecord) && !isLastReading)
                     {
                         recordToJoin = lastUncompletedRecord;
