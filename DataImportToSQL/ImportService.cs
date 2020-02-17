@@ -1,9 +1,11 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataImport.Storage;
 using DataImportToSQL.Exceptions;
+using DataImportToSQL.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace DataImportToSQL
@@ -30,49 +32,56 @@ namespace DataImportToSQL
                 throw new ImportException($"Files does not exist in directory: {_providerOptions.FilesPath}");
             }
             
-            var specifications = _provider.GetFileSpecifications();
-            var dataTable = specifications.ToDataTable();
-            await _importContext.TryToCreateTable(specifications.TableName, dataTable);
+            var fileSpecifications = _provider.GetFileSpecifications();
+            var dataTable = fileSpecifications.ToDataTable();
+            await _importContext.TryToCreateTable(fileSpecifications.TableName, dataTable);
             
             var files = Directory.GetFiles(_providerOptions.FilesPath);
 
-            var specCount = specifications.Specifications.Count;
+            var specCount = fileSpecifications.Specifications.Count;
             foreach (var file in files)
             {
-                var stringToJoin = "";
+                var recordToJoin = "";
                 using var stream = new StreamReader(file);
-                
-                var buffer = new char[202];
-                while(stream.ReadBlock(buffer,0,buffer.Length) > 0)
+
+                var buffer = new char[8000];
+
+                while (!stream.EndOfStream)
                 {
-                    var str = new string(buffer);
-                    str = stringToJoin + str;
-                    
-                    foreach (var record in str.Split(specifications.FileType.RecordsDelimiter))
+                    var charsRead = stream.ReadBlock(buffer, 0, buffer.Length);
+                    var isLastReading = charsRead < buffer.Length;
+
+                    if (isLastReading)
                     {
-                        var fields = record.Split(specifications.FileType.FieldsDelimiter);
-                        if (fields.Any(item => item == "750458753"))
-                        {
-                            
-                        }
-                        
+                        Array.Resize(ref buffer, charsRead);
+                    }
+
+                    var block = new string(buffer);
+                    block = recordToJoin + block;
+
+                    var lastIndex = block.LastIndexOf(fileSpecifications.FileType.RecordsDelimiter,
+                        StringComparison.Ordinal);
+                    var lastUncompletedRecord = block.Substring(lastIndex);
+
+                    var records = block.Split(fileSpecifications.FileType.RecordsDelimiter,
+                        StringSplitOptions.RemoveEmptyEntries);
+                    if (!string.IsNullOrEmpty(lastUncompletedRecord) && !isLastReading)
+                    {
+                        recordToJoin = lastUncompletedRecord;
+                        records = records.SkipLast(1).ToArray();
+                    }
+
+                    foreach (var record in records)
+                    {
+                        var fields = record.Split(fileSpecifications.FileType.FieldsDelimiter);
                         if (specCount == fields.Length)
                         {
                             dataTable.Rows.Add(fields);
-                            stringToJoin = string.Empty;
-                        }
-                        else if (specCount > fields.Length)
-                        {
-                            stringToJoin = record;
-                        }
-                        else if (specCount < fields.Length)
-                        {
-                           
                         }
                     }
                 }
 
-                await _importContext.BulkSaveAsync(specifications.TableName, dataTable, cancellationToken);
+                await _importContext.BulkSaveAsync(fileSpecifications.TableName, dataTable, cancellationToken);
             }
         }
     }
