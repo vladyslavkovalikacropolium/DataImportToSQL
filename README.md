@@ -1,8 +1,11 @@
+
+
 #Configurations 
 DataProvider
   SpecificationPath - path to file with specifications for data import from flat file. 
                         Specifications should be in json format and looks like 
-                        {
+```JSON
+{
                           "TableName" : "TableName",
                           "FileType": {
                             "FixedLength": true,
@@ -17,9 +20,13 @@ DataProvider
                               "FieldLength": 400
                             },
                           ]
-                         }
+ }
+```
+                        
    
   FilesPath - path to folder with flat files
+  
+  
 #Description 
 We decided to use a separate table for each specification of flat files.
 Based on the specification, we create the table, then read the data in blocks, parse them and add to data set.
