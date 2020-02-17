@@ -42,7 +42,7 @@ namespace DataImportToSQL
                 var stringToJoin = "";
                 using var stream = new StreamReader(file);
                 
-                var buffer = new char[1500000];
+                var buffer = new char[202];
                 while(stream.ReadBlock(buffer,0,buffer.Length) > 0)
                 {
                     var str = new string(buffer);

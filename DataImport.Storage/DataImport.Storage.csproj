@@ -11,8 +11,4 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.1" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\DataImport.Data\DataImport.Data.csproj" />
-    </ItemGroup>
-
 </Project>
